@@ -62,7 +62,17 @@ def yesterday_report_with_dynamics():
 
     @task
     def report_msg(df, chat_id):
-        pass
+        # function for format daily report in message template and sending
+
+        # df - dataframe
+        # chat_id  - id of telegram chat, where needs to send the message
+
+        msg = f'Feed report of {df.day[7].date()} \n\n'
+        for col in df.columns[1:]:
+            # using all columns in dataframe for format main metrics
+            msg += f"{col:<7}: {(df[col][7]): {'.2' if col == 'CTR' else ''}}, last day {(df[col][7] / df[col][6] - 1):.2%}, week ago {(df[col][7] / df[col][0] - 1):.2%} \n"
+
+        bot.sendMessage(chat_id=chat_id, text=msg)
     @task
     def plot_and_send_dynamics(df, chat_id):
 
