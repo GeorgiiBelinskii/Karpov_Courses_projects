@@ -53,7 +53,7 @@ def detector_of_anomalies():
 
     @task
     @task
-    def check_anomalies_iqr(df, window=5, number_of_iqr=2, critical_level=0.1):
+    def check_anomalies_iqr(df, window=5, number_of_iqr=2, critical_level=0.25):
         # calculation 25percentile, 75 percentile and IQR for last 5 values\window
 
         # df - dataframe
@@ -111,6 +111,39 @@ def detector_of_anomalies():
                 plot_object.name = f'{column}_anomaly_report.png'
                 plt.close()
                 bot.sendPhoto(chat_id=my_chat_id, photo=plot_object)
+
+    query_news = '''
+                   select toStartOfFifteenMinutes(time) as period,
+                        uniqExact(user_id) as news_users,
+                        countIf(action='like') as likes,
+                        countIf(action='view') as views,
+                        likes / views as CTR
+                    from simulator_20220720.feed_actions
+                    where (time >= today() - 1) and (time < toStartOfFifteenMinutes(now()))
+                    group by toStartOfFifteenMinutes(time)
+                    order by period
+        '''
+    query_msg = '''
+                   select toStartOfFifteenMinutes(time) as period,
+                                uniqExact(user_id) as users_msg,
+                            count(user_id) as msg_sent
+                    from simulator_20220720.message_actions
+                    where (time >= today() - 1) and (time < toStartOfFifteenMinutes(now()))
+                    group by toStartOfFifteenMinutes(time)
+                    order by period
+         '''
+    for query in [query_news, query_msg]:
+        df = extract_data(query, connection)
+        check_anomalies_iqr(df)
+
+
+detector_of_anomalies()
+
+
+
+
+
+
 
 
 
