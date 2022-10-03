@@ -47,7 +47,7 @@ def yesterday_report_with_dynamics():
                                             Likes + Views as Events,
                                             count(distinct post_id) as Posts
                                     from simulator_20220720.feed_actions
-                                    where toDate(time) >= today() -48 and toDate(time) < today()-40
+                                    where toDate(time) >= today() -8 and toDate(time) < today()-1
                                     group by toDate(time)
                                     order by toDate(time)
                                 '''
