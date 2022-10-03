@@ -36,4 +36,17 @@ my_chat_id = config['telegram_bot']['my_chat_id']
 
 bot = telegram.Bot(token=my_token)
 
+@dag(default_args=default_args, schedule=schedule_interval, catchup=False)
+def yesterday_report_with_dynamics():
+
+
+    @task
+    def extract_data(query):
+        pass
+
+    @task
+    def report_msg(df, chat_id):
+        pass
+    @task
+    def plot_and_send_dynamics(df, chat_id):
 
