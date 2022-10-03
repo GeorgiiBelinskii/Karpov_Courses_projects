@@ -41,7 +41,15 @@ bot = telegram.Bot(token=my_token)
 def detector_of_anomalies():
     @task
     def extract_data(query, connection):
-        pass
+        # function for extract data from database
+
+        # query - SQL-query for Clickhouse db
+        df = ph.read_clickhouse(query, connection=connection)
+
+        change_type_columns = df.select_dtypes(include='uint').columns
+        for col in change_type_columns:
+            df[col] = df[col].astype('int')
+        return df
 
     @task
     def check_anomalies_iqr(df, window=5, number_of_iqr=2, critical_level=0.1):
