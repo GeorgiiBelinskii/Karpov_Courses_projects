@@ -73,6 +73,42 @@ def yesterday_report_with_dynamics():
             msg += f"{col:<7}: {(df[col][7]): {'.2' if col == 'CTR' else ''}}, last day {(df[col][7] / df[col][6] - 1):.2%}, week ago {(df[col][7] / df[col][0] - 1):.2%} \n"
 
         bot.sendMessage(chat_id=chat_id, text=msg)
+
     @task
     def plot_and_send_dynamics(df, chat_id):
+        sns.set_theme(style="whitegrid")
+        sns.axes_style("darkgrid")
+
+        dict_color = {'DAU': 'b',
+                      'Likes': 'r',
+                      'Views': 'g',
+                      'CTR': 'brown',
+                      'Events': 'orange',
+                      'Posts': 'm',
+                      }
+
+        fig, axes = plt.subplots(3, 2, figsize=(20, 20))
+        fig.suptitle('7-days dynamics of product')
+        for num, col in enumerate(df.columns[1:]):
+            sns.lineplot(x='day',
+                         y=col,
+                         data=df,
+                         ax=axes[num % 3][num // 3],
+                         color=dict_color[col]).set_title(col)
+
+            axes[num % 3][num // 3].set_ylabel(col)
+
+        plot_object = io.BytesIO()
+        fig.savefig(plot_object)
+        plot_object.seek(0)
+        plot_object.name = '7-days_report.png'
+        plt.close()
+        bot.sendPhoto(chat_id=chat_id, photo=plot_object)
+
+    daily_report = extract_data(query)
+    report_msg(daily_report, my_chat_id)
+    plot_and_send_dynamics(daily_report, my_chat_id)
+
+
+yesterday_report_with_dynamics()
 
