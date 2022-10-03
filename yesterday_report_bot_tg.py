@@ -38,11 +38,27 @@ bot = telegram.Bot(token=my_token)
 
 @dag(default_args=default_args, schedule=schedule_interval, catchup=False)
 def yesterday_report_with_dynamics():
-
+    query = '''
+                                  select toDate(time) as day,
+                                            count(distinct user_id) as DAU,
+                                            countIf(action = 'view') as Views,
+                                            countIf(action = 'like') as Likes,
+                                            Likes / Views as CTR,
+                                            Likes + Views as Events,
+                                            count(distinct post_id) as Posts
+                                    from simulator_20220720.feed_actions
+                                    where toDate(time) >= today() -48 and toDate(time) < today()-40
+                                    group by toDate(time)
+                                    order by toDate(time)
+                                '''
 
     @task
     def extract_data(query):
-        pass
+        # function for extract data from database
+
+        # query - SQL-query for Clickhouse db
+        df = ph.read_clickhouse(query, connection=connection)
+        return df
 
     @task
     def report_msg(df, chat_id):
